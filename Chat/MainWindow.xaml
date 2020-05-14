@@ -1,0 +1,26 @@
+﻿<Window x:Class="Chat.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Chat"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <TextBlock x:Name="chatBx" HorizontalAlignment="Left" Margin="10,10,0,0" Text="Text block" TextWrapping="Wrap" VerticalAlignment="Top" Height="278" Width="518" Cursor=""/>
+        <RichTextBox x:Name="msgBx" Margin="10,325,272,62">
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="Enter your message"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+        <Button Name="sendBtn" Content="Send" HorizontalAlignment="Left" Margin="554,353,0,0" VerticalAlignment="Top" Height="25" Width="60" Click="sendBtn_Click"/>
+        <TextBox Name="portBx" HorizontalAlignment="Left" Margin="554,316,0,0" Text="7000" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox Name="ipBx" HorizontalAlignment="Left" Margin="554,270,0,0" Text="192.168.0.11" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label Name="ipLbl" Content="Server IP" HorizontalAlignment="Left" Margin="554,239,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.462,-0.114"/>
+        <Label Name="portLbl" Content="Server Port" HorizontalAlignment="Left" Margin="554,290,0,0" VerticalAlignment="Top"/>
+        <Button Name="connectBtn" Content="Connect" HorizontalAlignment="Left" Margin="698,316,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.202,-0.399" Click="connect_Click"/>
+
+    </Grid>
+</Window>
