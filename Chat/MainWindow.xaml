@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <TextBlock x:Name="chatBx" HorizontalAlignment="Left" Margin="10,10,0,0" Text="Text block" TextWrapping="Wrap" VerticalAlignment="Top" Height="278" Width="518" Cursor=""/>
+        <TextBlock x:Name="chatBx" HorizontalAlignment="Left" Margin="10,10,0,0" Text="Text block" TextWrapping="Wrap" VerticalAlignment="Top" Height="278" Width="489" Cursor=""/>
         <RichTextBox x:Name="msgBx" Margin="10,325,272,62">
             <FlowDocument>
                 <Paragraph>
@@ -17,10 +17,12 @@
         </RichTextBox>
         <Button Name="sendBtn" Content="Send" HorizontalAlignment="Left" Margin="554,353,0,0" VerticalAlignment="Top" Height="25" Width="60" Click="sendBtn_Click"/>
         <TextBox Name="portBx" HorizontalAlignment="Left" Margin="554,316,0,0" Text="7000" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox Name="ipBx" HorizontalAlignment="Left" Margin="554,270,0,0" Text="192.168.0.11" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox Name="ipBx" HorizontalAlignment="Left" Margin="554,270,0,0" Text="192.168.0.24" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <Label Name="ipLbl" Content="Server IP" HorizontalAlignment="Left" Margin="554,239,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.462,-0.114"/>
         <Label Name="portLbl" Content="Server Port" HorizontalAlignment="Left" Margin="554,290,0,0" VerticalAlignment="Top"/>
         <Button Name="connectBtn" Content="Connect" HorizontalAlignment="Left" Margin="698,316,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.202,-0.399" Click="connect_Click"/>
+        <TextBox Name="idBx"  HorizontalAlignment="Left" Margin="554,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="120"/>
+        <Label Name="idLbl"  Content="Your ID" HorizontalAlignment="Left" Margin="554,167,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

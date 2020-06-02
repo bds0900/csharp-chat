@@ -55,13 +55,35 @@ namespace Chat
 
         private void connect_Click(object sender, RoutedEventArgs e)
         {
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ipBx.Text), Convert.ToInt32(portBx.Text));
-            client.BeginConnect(ep, new AsyncCallback(ConnectCallback), client);
-            connectDone.WaitOne();
+            if(idBx.Text=="")
+            {
+                MessageBox.Show("Your ID");
+            }
+            else if(ipBx.Text=="")
+            {
+                MessageBox.Show("Server IP");
+            }
+            else if(portBx.Text=="")
+            {
+                MessageBox.Show("Server Port Num");
+            }
+            else
+            {
+                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ipBx.Text), Convert.ToInt32(portBx.Text));
+                client.BeginConnect(ep, new AsyncCallback(ConnectCallback), client);
+                connectDone.WaitOne();
 
-            connectBtn.IsEnabled = false;
-            sendBtn.IsEnabled = true;
+                connectBtn.IsEnabled = false;
+                sendBtn.IsEnabled = true;
+                idBx.IsEnabled = false;
+                ipBx.IsEnabled = false;
+                portBx.IsEnabled = false;
+
+                Send(client, idBx.Text+"<SOM>");
+                sendDone.WaitOne();
+            }
+            
         }
         private void ConnectCallback(IAsyncResult ar)
         {
@@ -127,7 +149,8 @@ namespace Chat
                 {
                     // There might be more data, so store the data received so far.  
                     state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-
+                    var response = state.sb.ToString();
+                    syncContext.Post((object state) => chatBx.Text = response, syncContext);
                     // Get the rest of the data.  
                     client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                         new AsyncCallback(ReceiveCallback), state);
@@ -138,6 +161,7 @@ namespace Chat
                     if (state.sb.Length > 1)
                     {
                         var response = state.sb.ToString();
+                        
                         syncContext.Post((object state) => chatBx.Text = response, syncContext);
                     }
                     // Signal that all bytes have been received.  
@@ -193,11 +217,14 @@ namespace Chat
                     byte[] byteData = Encoding.ASCII.GetBytes("<EOM>");
                     client.BeginSend(byteData, 0, byteData.Length, 0,
                         new AsyncCallback(SendCallback), client);
-
-                    client.Shutdown(SocketShutdown.Both);
+                }
+                catch(SocketException ex)
+                {
+                    
                 }
                 finally
                 {
+                    client.Shutdown(SocketShutdown.Both);
                     client.Close();
                 }
             }
@@ -212,7 +239,7 @@ namespace Chat
         // Client socket.  
         public Socket workSocket = null;
         // Size of receive buffer.  
-        public const int BufferSize = 8192;
+        public const int BufferSize = 256;
         // Receive buffer.  
         public byte[] buffer = new byte[BufferSize];
         // Received data string.  

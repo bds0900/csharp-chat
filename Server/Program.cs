@@ -10,7 +10,8 @@ namespace Server
     class Program
     {
         static int PORT = 7000;
-        static List<Socket> clients;
+        static List<ClientInfo> clients;
+
         static void Main(string[] args)
         {
             /*Server server = new Server();
@@ -51,7 +52,8 @@ namespace Server
             // Create a TCP/IP socket.  
             Socket listener = new Socket(AddressFamily.InterNetwork,
                 SocketType.Stream, ProtocolType.Tcp);
-            clients = new List<Socket>();
+            clients = new List<ClientInfo>();
+
             // Bind the socket to the local endpoint and listen for incoming connections.  
             try
             {
@@ -93,12 +95,13 @@ namespace Server
             Socket listener = (Socket)ar.AsyncState;
             Socket handler = listener.EndAccept(ar);
 
+            Console.WriteLine("{0} is joining...", handler.RemoteEndPoint);
             // Create the state object.  
             StateObject state = new StateObject();
             state.workSocket = handler;
 
             // accept한 소켓을 리스트에 넣어서 보관하자
-            clients.Add(handler);
+            //clients.Add(handler);
 
             handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                 new AsyncCallback(ReadCallback), state);
@@ -126,20 +129,58 @@ namespace Server
                 // Check for end-of-file tag. If it is not there, read
                 // more data.  
                 content = state.sb.ToString();
-                if (content.IndexOf("<EOF>") > -1)
+                if (content.IndexOf("<SOM>") > -1)
+                {
+                    string id = content.Substring(0, content.IndexOf("<SOM>"));
+                    var remote = handler.RemoteEndPoint.ToString();
+                    Console.WriteLine("add client");
+                    clients.Add(new ClientInfo { client = handler, IP = remote, ID = id, UserName = id });
+                    
+                    state.sb.Clear();
+                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                        new AsyncCallback(ReadCallback), state);
+                }
+                else if (content.IndexOf("<EOM>") > -1)
+                {
+                    //만약 EOM이 있으면 클라이언트는 더이상 메세지를 보내지 않겠다는 의미, socket을 close한다
+                    Console.WriteLine("{0} exit", handler.RemoteEndPoint);
+                    foreach (ClientInfo client in clients)
+                    {
+                        if(client.client== handler)
+                        {
+                            clients.Remove(client);
+                            break;
+                        }
+                    }
+                    
+                    //Disable both sending and receiving on this Socket
+                    handler.Shutdown(SocketShutdown.Both);
+                    handler.Close();
+                }
+                else if (content.IndexOf("<EOF>") > -1)
                 {
                     // All the data has been read from the
                     // client. Display it on the console.  
-                    Console.WriteLine("Read {0} bytes from socket. \n Data : {1}",
-                        content.Length, content);
+                    Console.WriteLine("Read {0} bytes from socket {1}", content.Length, handler.RemoteEndPoint);
+                    Console.WriteLine("Data : {0}", content);
+
                     // Echo the data back to the client.  
                     // Send(handler, content);
 
+                    Console.WriteLine("broad casting to all clients");
                     // 모든 handler에게 broadcasting하자
-                    foreach (var client in clients)
+                    string user = "";
+                    foreach (ClientInfo client in clients)
                     {
-                        Console.WriteLine(client.SocketType);
-                        Send(client, content);
+                        if(client.client==handler)
+                        {
+                            user = client.UserName;
+                        }
+                    }
+                    foreach (ClientInfo client in clients)
+                    {
+                        Console.WriteLine("send to {0}", client.client.RemoteEndPoint);
+                        Send(client.client, user + " : "+ content.Substring(0, content.IndexOf("<EOF>")));
                     }
 
                     // 메세지를 clear하고
@@ -147,14 +188,6 @@ namespace Server
                     // 한번 읽음이 끝나면 다시 receive해서 메세지를 받자
                     handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                         new AsyncCallback(ReadCallback), state);
-                }
-                else if (content.IndexOf("<EOM>") > -1)
-                {
-                    //만약 EOM이 있으면 클라이언트는 더이상 메세지를 보내지 않겠다는 의미, socket을 close한다
-                    clients.Remove(handler);
-                    //Disable both sending and receiving on this Socket
-                    handler.Shutdown(SocketShutdown.Both);
-                    handler.Close();
                 }
                 else
                 {
@@ -185,7 +218,7 @@ namespace Server
 
                 // Complete sending the data to the remote device.  
                 int bytesSent = handler.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to client.", bytesSent);
+                Console.WriteLine("Sent {0} bytes to client {1}.", bytesSent, handler.RemoteEndPoint);
 
                 //handler.Shutdown(SocketShutdown.Both);
                 //handler.Close();
@@ -203,10 +236,17 @@ namespace Server
         // Client  socket.  
         public Socket workSocket = null;
         // Size of receive buffer.  
-        public const int BufferSize = 8192;
+        public const int BufferSize = 24;//8192
         // Receive buffer.  
         public byte[] buffer = new byte[BufferSize];
         // Received data string.  
         public StringBuilder sb = new StringBuilder();
+    }
+    public class ClientInfo
+    {
+        public Socket client { set; get; }
+        public string IP { set; get; }
+        public string ID { set; get; }
+        public string UserName { set; get; }
     }
 }
